@@ -1,7 +1,7 @@
 import ScoreBoard from './ScoreBoard.jsx'
 import styles from './ResultScreen.module.css'
 
-function ResultScreen({ score, totalQuestions, onPlayAgain }) {
+function ResultScreen({ score, totalQuestions, highscore, onPlayAgain }) {
   const didGreat = score / totalQuestions >= 0.6
 
   return (
@@ -19,6 +19,9 @@ function ResultScreen({ score, totalQuestions, onPlayAgain }) {
             : 'Every quiz makes you a little sharper. Ready for another?'}
         </p>
         <ScoreBoard score={score} totalQuestions={totalQuestions} />
+        <p className={styles.highscore}>
+          Best score: <strong>{highscore} / {totalQuestions}</strong>
+        </p>
         <button className={styles.playAgain} type="button" onClick={onPlayAgain}>
           Play again <span aria-hidden="true">↻</span>
         </button>

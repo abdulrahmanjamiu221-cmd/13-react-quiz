@@ -51,6 +51,16 @@
   line-height: 1.7;
 }
 
+.highscore {
+  margin: 12px 0 0;
+  color: #928ea1;
+  font-size: 11px;
+}
+
+.highscore strong {
+  color: #6253bf;
+}
+
 .playAgain {
   width: 100%;
   min-height: 49px;

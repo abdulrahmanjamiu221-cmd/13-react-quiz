@@ -73,6 +73,89 @@
   padding: 18px 0 42px;
 }
 
+.statusCard {
+  width: min(460px, 100%);
+  margin: 0 auto;
+  padding: 43px 35px;
+  border: 1px solid #ebe7f2;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgb(67 52 106 / 9%);
+  text-align: center;
+}
+
+.statusCard h1 {
+  margin: 0;
+  color: #28263b;
+  font-size: clamp(29px, 6vw, 37px);
+  font-weight: 850;
+  letter-spacing: -1.6px;
+}
+
+.statusCard p {
+  margin: 10px 0 0;
+  color: #888496;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.statusCard button {
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 0 21px;
+  border: 0;
+  border-radius: 11px;
+  background: #7765dc;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.statusCard button:hover {
+  background: #6855d0;
+}
+
+.statusCard button:focus-visible {
+  outline: 3px solid #c8c0ff;
+  outline-offset: 3px;
+}
+
+.statusIcon {
+  width: 49px;
+  height: 49px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 17px;
+  border-radius: 16px;
+  background: #f1eeff;
+  color: #7967df;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin: 0 auto 19px;
+  border: 4px solid #eeeaff;
+  border-top-color: #7967df;
+  border-radius: 50%;
+  animation: spin 850ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .footer {
   padding: 18px 24px 24px;
   color: #a29eac;

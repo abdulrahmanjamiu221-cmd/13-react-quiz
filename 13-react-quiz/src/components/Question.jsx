@@ -8,7 +8,10 @@ function Question({
   difficulty,
   questionNumber,
   totalQuestions,
-  onFinish,
+  answer: selectedAnswer,
+  secondsRemaining,
+  onAnswer,
+  onNext,
 }) {
   return (
     <section className={styles.screen} aria-labelledby="question-prompt">
@@ -17,7 +20,7 @@ function Question({
           <span className={styles.category}>{category}</span>
           <span className={styles.difficulty}>{difficulty}</span>
         </div>
-        <Timer time="15:00" />
+        <Timer secondsRemaining={secondsRemaining} />
       </div>
 
       <ProgressBar current={questionNumber} total={totalQuestions} />
@@ -31,21 +34,41 @@ function Question({
 
         <fieldset className={styles.answers}>
           <legend className={styles.visuallyHidden}>Choose your answer</legend>
-          {question.answers.map((answer, index) => (
-            <label className={styles.answer} key={answer}>
-              <input type="radio" name="answer" value={answer} />
+          {question.answers.map((option, index) => (
+            <button
+              className={styles.answer}
+              data-result={
+                selectedAnswer === null
+                  ? undefined
+                  : index === question.correctAnswer
+                    ? 'correct'
+                    : index === selectedAnswer
+                      ? 'incorrect'
+                      : undefined
+              }
+              disabled={selectedAnswer !== null}
+              key={option}
+              onClick={() => onAnswer(index)}
+              type="button"
+            >
               <span className={styles.letter}>{String.fromCharCode(65 + index)}</span>
-              <span>{answer}</span>
+              <span>{option}</span>
               <span className={styles.answerArrow} aria-hidden="true">↗</span>
-            </label>
+            </button>
           ))}
         </fieldset>
 
         <div className={styles.cardFooter}>
-          <span><span aria-hidden="true">↵</span> Select an answer to lock it in</span>
-          <button type="button" onClick={onFinish}>
-            Finish quiz <span aria-hidden="true">→</span>
-          </button>
+          <span>
+            <span aria-hidden="true">{selectedAnswer === null ? '↵' : '✦'}</span>
+            {selectedAnswer === null ? 'Choose an answer to lock it in' : 'Answer locked in!'}
+          </span>
+          {selectedAnswer !== null && (
+            <button type="button" onClick={onNext}>
+              {questionNumber === totalQuestions ? 'See results' : 'Next'}
+              <span aria-hidden="true">→</span>
+            </button>
+          )}
         </div>
       </div>
       <p className={styles.encouragement}><span aria-hidden="true">✦</span> You&apos;ve got this!</p>
