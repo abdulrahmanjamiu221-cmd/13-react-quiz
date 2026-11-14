@@ -36,10 +36,11 @@ function StartScreen({
           <span className={styles.sparkle} aria-hidden="true">✦</span>
         </div>
 
-        <label className={styles.field}>
-          <span className={styles.label}>Pick a category</span>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="category-select">Pick a category</label>
           <span className={styles.selectWrap}>
             <select
+              id="category-select"
               name="category"
               defaultValue=""
               disabled={categoriesStatus !== 'ready'}
@@ -60,7 +61,7 @@ function StartScreen({
               <button type="button" onClick={onRetryCategories}>Try again</button>
             </span>
           )}
-        </label>
+        </div>
 
         <fieldset className={styles.fieldset}>
           <legend className={styles.label}>How spicy?</legend>
@@ -79,12 +80,12 @@ function StartScreen({
           </div>
         </fieldset>
 
-        <label className={styles.field}>
+        <div className={styles.field}>
           <span className={styles.label}>Number of questions</span>
           <span className={styles.selectWrap}>
             <span className={styles.fixedValue}>10 questions · just right</span>
           </span>
-        </label>
+        </div>
 
         <button
           className={styles.startButton}
