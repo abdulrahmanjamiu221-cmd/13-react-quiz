@@ -1,0 +1,33 @@
+.progress {
+  width: 100%;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  color: #9a96a7;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.divider {
+  margin: 0 3px;
+  color: #c3bfcb;
+}
+
+.track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #eae7f1;
+}
+
+.fill {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8170e1, #b19cf0);
+  transition: width 180ms ease;
+}

@@ -1,16 +1,20 @@
-# React + Vite
+# Quizzy
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A playful quiz UI built with Vite and React. The sample quiz data is hard-coded in `src/components/App.jsx`, and each component's styles live alongside it in a CSS module.
 
-Currently, two official plugins are available:
+## Thinking in React
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The UI is split at the points where content or behavior has a clear responsibility:
 
-## React Compiler
+- `App` owns the current screen and switches between the start, question, and result views.
+- `StartScreen` presents quiz setup controls; `Question` displays one question and its answer choices.
+- `ProgressBar`, `Timer`, and `ScoreBoard` are small display components that receive their values through props.
+- `ResultScreen` composes the score display and provides a way to return to the start screen.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For this first UI pass, React state is limited to the active screen in `App`. The category, difficulty, question count, question content, timer, and result are sample values rather than quiz logic. The setup controls and answer choices are native, uncontrolled form inputs; connecting their values to a real quiz flow can be the next step.
 
-## Expanding the Oxlint configuration
+## Scripts
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- `npm run dev` starts the Vite development server.
+- `npm run build` creates the production build.
+- `npm run lint` runs Oxlint.

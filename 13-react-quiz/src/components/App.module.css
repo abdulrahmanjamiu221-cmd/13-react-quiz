@@ -1,0 +1,106 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 2% 13%, rgb(255 210 184 / 43%), transparent 27rem),
+    radial-gradient(ellipse at 96% 76%, rgb(216 206 255 / 54%), transparent 30rem),
+    #fbf9f5;
+}
+
+.header {
+  width: min(1120px, calc(100% - 64px));
+  height: 88px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #242237;
+  font-size: 23px;
+  font-weight: 850;
+  letter-spacing: -1.2px;
+  text-decoration: none;
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #7461da;
+  color: white;
+  font-size: 19px;
+  letter-spacing: -1px;
+  transform: rotate(-7deg);
+}
+
+.brandDot {
+  color: #fb9869;
+}
+
+.headerNote {
+  color: #9692a5;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e8e3f2;
+  border-radius: 50%;
+  background: #fff;
+  color: #ef9b6b;
+  font-size: 20px;
+}
+
+.main {
+  width: min(1120px, calc(100% - 64px));
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  padding: 18px 0 42px;
+}
+
+.footer {
+  padding: 18px 24px 24px;
+  color: #a29eac;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.footer span {
+  margin-left: 4px;
+  color: #ef9b6b;
+}
+
+@media (max-width: 600px) {
+  .header,
+  .main {
+    width: calc(100% - 36px);
+  }
+
+  .header {
+    height: 72px;
+  }
+
+  .headerNote {
+    display: none;
+  }
+
+  .main {
+    padding: 10px 0 26px;
+  }
+}
