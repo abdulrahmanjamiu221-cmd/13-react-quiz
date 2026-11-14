@@ -1,46 +1,75 @@
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import Question from './Question.jsx'
 import ResultScreen from './ResultScreen.jsx'
 import StartScreen from './StartScreen.jsx'
 import styles from './App.module.css'
 
+const SECONDS_PER_QUESTION = 15
 const initialState = {
   status: 'idle',
   questions: [],
   index: 0,
   answer: null,
   points: 0,
-  secondsRemaining: 15 * 60,
+  secondsRemaining: SECONDS_PER_QUESTION,
   highscore: 0,
 }
 
-const sampleQuestions = [
-  {
-    prompt: 'Which planet is known as the Red Planet?',
-    answers: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
-    correctAnswer: 1,
-  },
-  {
-    prompt: 'What is the largest ocean on Earth?',
-    answers: ['Atlantic', 'Indian', 'Pacific', 'Arctic'],
-    correctAnswer: 2,
-  },
-  {
-    prompt: 'How many sides does a hexagon have?',
-    answers: ['Five', 'Six', 'Seven', 'Eight'],
-    correctAnswer: 1,
-  },
-  {
-    prompt: 'Which animal is the tallest in the world?',
-    answers: ['Elephant', 'Ostrich', 'Giraffe', 'Camel'],
-    correctAnswer: 2,
-  },
-  {
-    prompt: 'What do bees collect from flowers to make honey?',
-    answers: ['Nectar', 'Dew', 'Seeds', 'Petals'],
-    correctAnswer: 0,
-  },
-]
+const responseCodeMessages = {
+  1: 'There are not enough questions for those settings. Try another category or difficulty.',
+  2: 'The trivia service did not accept those quiz settings. Please try again.',
+  3: 'The trivia session could not be found. Please try again.',
+  4: 'The trivia session has run out of questions. Please try again.',
+  5: 'The trivia service is receiving too many requests. Wait a moment and try again.',
+}
+
+function decodeHtmlEntities(value) {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = value
+  return textarea.value
+}
+
+function shuffleAnswers(answers) {
+  const shuffled = [...answers]
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    const answer = shuffled[index]
+    shuffled[index] = shuffled[swapIndex]
+    shuffled[swapIndex] = answer
+  }
+  return shuffled
+}
+
+function normalizeQuestions(results) {
+  return results.map((item) => {
+    if (
+      typeof item.question !== 'string' ||
+      typeof item.category !== 'string' ||
+      typeof item.difficulty !== 'string' ||
+      typeof item.correct_answer !== 'string' ||
+      !Array.isArray(item.incorrect_answers) ||
+      item.incorrect_answers.length !== 3
+    ) {
+      throw new Error('The trivia service returned an invalid question.')
+    }
+
+    const answers = shuffleAnswers([
+      { text: decodeHtmlEntities(item.correct_answer), correct: true },
+      ...item.incorrect_answers.map((answer) => ({
+        text: decodeHtmlEntities(answer),
+        correct: false,
+      })),
+    ])
+
+    return {
+      prompt: decodeHtmlEntities(item.question),
+      category: decodeHtmlEntities(item.category),
+      difficulty: item.difficulty[0].toUpperCase() + item.difficulty.slice(1),
+      answers: answers.map((answer) => answer.text),
+      correctAnswer: answers.findIndex((answer) => answer.correct),
+    }
+  })
+}
 
 function finishQuiz(state) {
   return {
@@ -76,7 +105,7 @@ function quizReducer(state, action) {
         index: 0,
         answer: null,
         points: 0,
-        secondsRemaining: 15 * 60,
+        secondsRemaining: SECONDS_PER_QUESTION,
       }
     case 'dataFailed':
       return state.status === 'loading' ? { ...state, status: 'error' } : state
@@ -104,7 +133,12 @@ function quizReducer(state, action) {
       ) {
         return state
       }
-      return { ...state, index: state.index + 1, answer: null }
+      return {
+        ...state,
+        index: state.index + 1,
+        answer: null,
+        secondsRemaining: SECONDS_PER_QUESTION,
+      }
     case 'finish':
       if (
         state.status !== 'active' ||
@@ -127,17 +161,92 @@ function quizReducer(state, action) {
 
 function App() {
   const [state, dispatch] = useReducer(quizReducer, initialState)
+  const [categories, setCategories] = useState([])
+  const [categoriesStatus, setCategoriesStatus] = useState('loading')
+  const [categoriesError, setCategoriesError] = useState('')
+  const [categoryRetry, setCategoryRetry] = useState(0)
+  const [quizError, setQuizError] = useState('')
+  const quizSettingsRef = useRef({ categoryId: '9', difficulty: 'easy' })
   const totalQuestions = state.questions.length
   const question = state.questions[state.index]
 
   useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadCategories() {
+      setCategoriesStatus('loading')
+      setCategoriesError('')
+
+      try {
+        const response = await fetch('https://opentdb.com/api_category.php', {
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          throw new Error(`Category request failed (${response.status}).`)
+        }
+
+        const data = await response.json()
+        if (!Array.isArray(data.trivia_categories)) {
+          throw new Error('The trivia service returned an invalid category list.')
+        }
+
+        setCategories(data.trivia_categories)
+        setCategoriesStatus('ready')
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setCategoriesError(
+          error instanceof Error ? error.message : 'Could not load quiz categories.',
+        )
+        setCategoriesStatus('error')
+      }
+    }
+
+    loadCategories()
+    return () => controller.abort()
+  }, [categoryRetry])
+
+  useEffect(() => {
     if (state.status !== 'loading') return undefined
 
-    const timeoutId = window.setTimeout(() => {
-      dispatch({ type: 'dataReceived', questions: sampleQuestions })
-    }, 350)
+    const controller = new AbortController()
 
-    return () => window.clearTimeout(timeoutId)
+    async function loadQuestions() {
+      try {
+        const { categoryId, difficulty } = quizSettingsRef.current
+        const query = new URLSearchParams({
+          amount: '10',
+          category: categoryId,
+          difficulty,
+          type: 'multiple',
+        })
+        const response = await fetch(`https://opentdb.com/api.php?${query}`, {
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          throw new Error(`Question request failed (${response.status}).`)
+        }
+
+        const data = await response.json()
+        if (data.response_code !== 0) {
+          throw new Error(
+            responseCodeMessages[data.response_code] ??
+              `The trivia service returned error code ${data.response_code}.`,
+          )
+        }
+        if (!Array.isArray(data.results) || data.results.length === 0) {
+          throw new Error('The trivia service did not return any questions.')
+        }
+
+        dispatch({ type: 'dataReceived', questions: normalizeQuestions(data.results) })
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setQuizError(error instanceof Error ? error.message : 'Could not load quiz questions.')
+        dispatch({ type: 'dataFailed' })
+      }
+    }
+
+    loadQuestions()
+    return () => controller.abort()
   }, [state.status])
 
   useEffect(() => {
@@ -148,7 +257,19 @@ function App() {
     }, 1000)
 
     return () => window.clearInterval(intervalId)
-  }, [state.status])
+  }, [state.status, state.index])
+
+  function handleStart(settings) {
+    quizSettingsRef.current = settings
+    setQuizError('')
+    dispatch({ type: 'start' })
+  }
+
+  function retryCategories() {
+    setCategoriesError('')
+    setCategoriesStatus('loading')
+    setCategoryRetry((retry) => retry + 1)
+  }
 
   return (
     <div className={styles.app}>
@@ -171,7 +292,13 @@ function App() {
 
       <main className={styles.main}>
         {state.status === 'idle' && (
-          <StartScreen onStart={() => dispatch({ type: 'start' })} />
+          <StartScreen
+            categories={categories}
+            categoriesStatus={categoriesStatus}
+            categoriesError={categoriesError}
+            onRetryCategories={retryCategories}
+            onStart={handleStart}
+          />
         )}
         {state.status === 'loading' && (
           <section className={styles.statusCard} aria-live="polite">
@@ -193,8 +320,8 @@ function App() {
         {state.status === 'active' && question && (
           <Question
             question={question}
-            category="Curious minds"
-            difficulty="Easy"
+            category={question.category}
+            difficulty={question.difficulty}
             questionNumber={state.index + 1}
             totalQuestions={totalQuestions}
             answer={state.answer}
@@ -221,8 +348,8 @@ function App() {
           <section className={styles.statusCard} aria-labelledby="error-heading">
             <span className={styles.statusIcon} aria-hidden="true">!</span>
             <h1 id="error-heading">Quiz didn&apos;t load</h1>
-            <p>Something went wrong getting the questions. Give it another try.</p>
-            <button type="button" onClick={() => dispatch({ type: 'start' })}>
+            <p>{quizError || 'Something went wrong getting the questions. Give it another try.'}</p>
+            <button type="button" onClick={() => handleStart(quizSettingsRef.current)}>
               Try again <span aria-hidden="true">↻</span>
             </button>
           </section>

@@ -143,13 +143,57 @@
   box-shadow: 0 0 0 3px rgb(136 120 228 / 16%);
 }
 
-.selectWrap > span {
+.selectWrap select:disabled {
+  color: #aaa6b5;
+  cursor: wait;
+}
+
+.selectWrap > span[aria-hidden='true'] {
   position: absolute;
   top: 10px;
   right: 15px;
   color: #928ea1;
   font-size: 19px;
   pointer-events: none;
+}
+
+.fixedValue {
+  min-height: 47px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #e8e5ee;
+  border-radius: 11px;
+  background: #fbfaff;
+  color: #777387;
+  font-size: 13px;
+}
+
+.categoryError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  color: #b74747;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.categoryError button {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid #f0caca;
+  border-radius: 7px;
+  background: #fff7f6;
+  color: #a53d3d;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.categoryError button:hover {
+  background: #ffeded;
 }
 
 .difficultyOptions {
@@ -215,6 +259,13 @@
 .startButton:hover {
   background: #6855d0;
   transform: translateY(-1px);
+}
+
+.startButton:disabled {
+  background: #aaa2d8;
+  box-shadow: none;
+  cursor: wait;
+  transform: none;
 }
 
 .startButton:focus-visible {

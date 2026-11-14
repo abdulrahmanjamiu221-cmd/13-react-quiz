@@ -1,12 +1,21 @@
 import styles from './StartScreen.module.css'
 
-const categories = ['General knowledge', 'Science', 'Nature', 'Pop culture']
 const difficulties = ['Easy', 'Medium', 'Hard']
 
-function StartScreen({ onStart }) {
+function StartScreen({
+  categories,
+  categoriesStatus,
+  categoriesError,
+  onRetryCategories,
+  onStart,
+}) {
   function handleSubmit(event) {
     event.preventDefault()
-    onStart()
+    const formData = new FormData(event.currentTarget)
+    onStart({
+      categoryId: formData.get('category'),
+      difficulty: formData.get('difficulty'),
+    })
   }
 
   return (
@@ -30,13 +39,27 @@ function StartScreen({ onStart }) {
         <label className={styles.field}>
           <span className={styles.label}>Pick a category</span>
           <span className={styles.selectWrap}>
-            <select name="category" defaultValue={categories[0]}>
+            <select
+              name="category"
+              defaultValue=""
+              disabled={categoriesStatus !== 'ready'}
+              required
+            >
+              <option value="" disabled>
+                {categoriesStatus === 'loading' ? 'Loading categories...' : 'Select a category'}
+              </option>
               {categories.map((category) => (
-                <option key={category}>{category}</option>
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
             <span aria-hidden="true">⌄</span>
           </span>
+          {categoriesStatus === 'error' && (
+            <span className={styles.categoryError} role="alert">
+              {categoriesError}
+              <button type="button" onClick={onRetryCategories}>Try again</button>
+            </span>
+          )}
         </label>
 
         <fieldset className={styles.fieldset}>
@@ -59,16 +82,15 @@ function StartScreen({ onStart }) {
         <label className={styles.field}>
           <span className={styles.label}>Number of questions</span>
           <span className={styles.selectWrap}>
-            <select name="questionCount" defaultValue="5">
-              <option value="5">5 questions · quick & easy</option>
-              <option value="10">10 questions · just right</option>
-              <option value="15">15 questions · deep dive</option>
-            </select>
-            <span aria-hidden="true">⌄</span>
+            <span className={styles.fixedValue}>10 questions · just right</span>
           </span>
         </label>
 
-        <button className={styles.startButton} type="submit">
+        <button
+          className={styles.startButton}
+          type="submit"
+          disabled={categoriesStatus !== 'ready'}
+        >
           Let&apos;s play <span aria-hidden="true">→</span>
         </button>
         <p className={styles.note}><span aria-hidden="true">♡</span> No pressure. Just for fun.</p>
